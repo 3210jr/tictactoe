@@ -1,8 +1,5 @@
-import numpy as np
 import random
 import ast
-import pandas as pd
-from sklearn import tree
 from flask import Flask, request, send_from_directory, send_file
 
 from model import next_play
