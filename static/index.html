@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <title>Tic Tac Toe</title>
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="center header-wrapper">
+            <span class="large-text">
+                Vue + Flask Tick Tac Toe
+            </span>
+        </div>
+        <div class="game-board">
+            <div v-for="(row, rowIndex) in board" class="game-row">
+                <div v-model="cellValue = cell == 0 ? '' : cell" v-on:click="humanPlay(rowIndex, cellIndex)" v-for="(cell, cellIndex) in row"
+                    class="game-cell">
+                    {{ cellValue.toUpperCase() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                human: "x",
+                computer: "o",
+                gameOver: false,
+                board: [
+                    [0, 0, 0],
+                    [0, 0, 0],
+                    [0, 0, 0]
+                ]
+            },
+            methods: {
+                announceWinner: function (winner) {
+                    if (winner === "x") {
+                        const confirmation = confirm(
+                            "Congratulations! You have bested this very mediocre algorithm!")
+                        confirmation ? location.reload() : null;
+                    } else if (winner === "o") {
+                        const confirmation = confirm(
+                            "You should really practice more. You just got beat ... by a compter.")
+                        confirmation ? location.reload() : null;
+                    } else {
+                        const confirmation = confirm(
+                            "Your effort is unparralleled. Keep practicing young one.")
+                        confirmation ? location.reload() : null;
+                    }
+                },
+                evaluateGame: function () {
+                    const board = _.flatten(this.board);
+                    const computer = this.computer;
+                    const human = this.human;
+
+                    const winning_rows = [
+                        [0, 1, 2],
+                        [3, 4, 5],
+                        [6, 7, 8],
+                        [0, 3, 6],
+                        [1, 4, 7],
+                        [2, 5, 8],
+                        [0, 4, 8],
+                        [2, 4, 6]
+                    ];
+
+                    const humanCells = board.reduce((a, e, i) => (e === human) ? a.concat(i) : a, []);
+                    const computerCells = board.reduce((a, e, i) => (e === computer) ? a.concat(i) : a, []);
+
+                    let gameOver = false;
+                    let winner = null;
+
+                    board.indexOf(0) === -1 ? gameOver = true : gameOver = false;
+
+                    if (!gameOver) {
+                        for (ix = 0; ix < winning_rows.length; ix++) {
+                            row = winning_rows[ix];
+                            if (_.intersection(row, humanCells).length >= 3) {
+                                gameOver = true;
+                                winner = human;
+                                break;
+                            } else if (_.intersection(row, computerCells).length >= 3) {
+                                gameOver = true;
+                                winner = computer;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (gameOver) {
+                        this.gameOver = gameOver
+                    }
+
+                    return {
+                        gameOver,
+                        winner
+                    }
+                },
+                computerPlay: function (currentBoard) {
+                    if (this.gameOver) {
+                        return
+                    }
+                    const board = currentBoard;
+                    axios
+                        .post(`http://127.0.0.1:5000/`, {
+                            board: JSON.stringify(board)
+                        })
+                        .then(response => {
+                            const move = response.data;
+                            let row = 0;
+                            let cell = 0;
+                            if (move < 3) {
+                                // row 1
+                                row = 0;
+                                cell = move
+                            } else if (move < 6) {
+                                // row 2
+                                row = 1;
+                                cell = move - 3
+                            } else {
+                                // row 3
+                                row = 2;
+                                cell = move - 6
+                            }
+                            board[row][cell] = "o";
+                            this.$set(this.board, board);
+                            const status = this.evaluateGame();
+                            if (status.gameOver) {
+                                // wait for the dom to update with the last play
+                                window.setTimeout(() => this.announceWinner(status.winner), 300)
+                                return;
+                            }
+                        })
+                        .catch(e => {
+                            console.log("Error", e);
+                        });
+                },
+                humanPlay: function (rowIndex, cellIndex) {
+                    const board = this.board;
+                    const cell = board[rowIndex][cellIndex];
+                    if (this.gameOver) {
+                        return
+                    }
+                    if (cell !== 0) {
+                        // this cell is occupied
+                    } else {
+                        board[rowIndex][cellIndex] = "x";
+                        this.$set(this.board, board);
+                        const status = this.evaluateGame();
+                        if (status.gameOver) {
+                            // wait for the dom to update with the last play
+                            window.setTimeout(() => this.announceWinner(status.winner), 300)
+                            return;
+                        }
+                        this.computerPlay(board)
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

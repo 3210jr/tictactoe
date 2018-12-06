@@ -1,0 +1,68 @@
+body {
+    display: flex;
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+#id {
+    margin: auto;
+}
+
+.game-board {
+    align-self: center;
+    width: 400px;
+    height: 400px;
+}
+
+.game-row {
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    height: 33.33%;
+    width: 100%;
+    flex-direction: row;
+}
+
+.game-row:last-child {
+    border-bottom: 0px;
+}
+
+.game-cell {
+    width: 33.3%;
+    border-right: 1px solid #ccc;
+    display: flex;
+    /* flex: 1; */
+    /* height: 100%; */
+    justify-content: center;
+    align-items: center;
+    font-size: 4em;
+    /* text-align: center; */
+    /* vertical-align: middle; */
+}
+
+.game-cell:last-child {
+    border-right: 0px;
+}
+
+.center {
+    text-align: center;
+}
+
+.large-text {
+    font-size: 2.3em;
+}
+
+.header-wrapper {
+    margin-bottom: 10vh;
+}
+
+@media (max-width: 600px) {
+    .game-board {
+        width: 80vw;
+        height: 80vw;
+        margin: 10px auto;
+    }
+}
